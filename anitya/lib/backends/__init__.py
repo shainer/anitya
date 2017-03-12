@@ -63,10 +63,14 @@ def upstream_cmp(v1, v2):
     v1, rc1, rcn1 = split_rc(v1)
     v2, rc2, rcn2 = split_rc(v2)
 
-    diff = rpm_cmp(v1, v2)
-    if diff != 0:
-        # base versions are different, ignore rc-status
-        return diff
+    from packaging import version
+    version1 = version.parse(v1)
+    version2 = version.parse(v2)
+
+    if version1 > version2:
+        return 1
+    elif version1 < version2:
+        return -1
 
     if rc1 and rc2:
         # both are rc, higher rc is newer
@@ -126,12 +130,6 @@ def split_rc(version):
         # Example version: 1.8.23-20100128-r1100
         # Then: v=1.8.23, but rc_str=""
         return (version, "", "")
-
-
-def rpm_cmp(v1, v2):
-    import rpm
-    diff = rpm.labelCompare((None, v1, None), (None, v2, None))
-    return diff
 
 
 class BaseBackend(object):
